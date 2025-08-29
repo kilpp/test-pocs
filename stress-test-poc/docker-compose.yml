@@ -1,0 +1,71 @@
+version: '1'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: stress_test_poc
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: stress_test_poc
+    ports:
+      - "5432:5432"
+    volumes:
+      - stress_test_poc_postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/initdb:/docker-entrypoint-initdb.d
+    networks:
+      stress-test-poc:
+        ipv4_address: 10.5.0.2
+
+  game-service:
+    container_name: game-service
+    depends_on:
+      - postgres
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_URL: postgres
+    networks:
+      stress-test-poc:
+        ipv4_address: 10.5.0.3
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      stress-test-poc:
+        ipv4_address: 10.5.0.6
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - stress_test_poc_grafana_data:/var/lib/grafana
+      - ./infrastructure/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      stress-test-poc:
+        ipv4_address: 10.5.0.7
+
+volumes:
+  stress_test_poc_postgres_data:
+  stress_test_poc_grafana_data:
+
+networks:
+  stress-test-poc:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
