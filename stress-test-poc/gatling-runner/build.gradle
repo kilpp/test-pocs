@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'io.gatling.gradle' version '3.14.3.6'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
+}
+
+dependencies {
+    implementation project(':')
+    implementation("io.gatling.highcharts:gatling-charts-highcharts:3.14.3")
+    implementation("io.gatling:gatling-core:3.14.3")
+    implementation("io.gatling:gatling-http:3.14.3")
+    implementation("io.gatling:gatling-recorder:3.14.3")
+    implementation('com.fasterxml.jackson.core:jackson-databind:2.15.2')
+}
