@@ -1,2 +1,3 @@
 rootProject.name = 'stress-test-poc'
 include 'gatling-runner'
+include 'k6-runner'
